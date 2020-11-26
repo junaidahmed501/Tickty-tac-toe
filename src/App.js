@@ -49,12 +49,11 @@ class Game extends React.Component {
       history: Array(Array(9).fill('')),
       stepNumber: 0,
       xIsNext: true,
-      // winner: null
     }
   }
 
   makeTheMove(i) {
-    let history = [...this.state.history].slice(0, this.state.stepNumber + 1);
+    let history = this.state.history.slice(0, this.state.stepNumber + 1);
     const squares = [...history[history.length - 1]];
     if (getWinner(squares) || squares[i]) {
       return;
