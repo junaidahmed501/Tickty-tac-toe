@@ -46,7 +46,11 @@ class Game extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      history: Array(Array(9).fill('')),
+      history: Array(
+        {
+          squares: Array(9).fill(null)
+        }
+      ),
       stepNumber: 0,
       xIsNext: true,
     }
@@ -54,12 +58,15 @@ class Game extends React.Component {
 
   makeTheMove(i) {
     let history = this.state.history.slice(0, this.state.stepNumber + 1);
-    const squares = [...history[history.length - 1]];
+    const squares = history[history.length - 1].squares.slice();
     if (getWinner(squares) || squares[i]) {
       return;
     }
     squares[i] = this.state.xIsNext ? 'X': 'O';
-    history.push(squares);
+    history = history.concat({
+      squares: squares,
+      latestMoveSquare: i
+    });
     this.setState({
       history,
       xIsNext: !this.state.xIsNext,
@@ -68,7 +75,7 @@ class Game extends React.Component {
   }
 
   getStatus() {
-    let winner = getWinner(this.state.history[this.state.history.length - 1]);
+    let winner = getWinner(this.state.history[this.state.history.length - 1].squares);
     return <div>{winner ? `Winner: ${winner}`: (`Next turn: ${this.state.xIsNext ? 'X' : 'O'}`)}</div>
   }
 
@@ -83,13 +90,19 @@ class Game extends React.Component {
   }
 
   getHistory() {
+    const rowLen = this.state.history.length - 1;
     return this.state.history.map((board, idx) => {
-      return <li key={idx} onClick={() => this.goToMove(idx)}>{idx === 0 ? 'Start over': `Go to move ${idx}`}</li>
+      let col =  1 + board.latestMoveSquare % 3;
+      let row =  1 + Math.floor(board.latestMoveSquare / 3);
+      return <li
+        key={idx}
+        className={idx === rowLen ? 'bold-it': ''}
+        onClick={() => this.goToMove(idx)}>{idx === 0 ? 'Start over': `Go to move ${idx} (${row}, ${col})`}</li>
     })
   }
 
   render() {
-    let boardData = this.state.history[this.state.stepNumber];
+    let boardData = this.state.history[this.state.stepNumber].squares;
     return (
       <div className="App">
         <div>
