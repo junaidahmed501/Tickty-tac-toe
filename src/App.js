@@ -19,26 +19,27 @@ class Board extends React.Component {
         handleSquareClick={() => this.props.handleBoardClick(i)}/>
     )
   }
-  render() {
+
+  loopSquares() {
+    let rows = [];
+    for(let i=0; i<3; i++) {
+      let cols = [];
+      for (let j= i*3 ; j<= i*3+2; j++) {
+        cols.push(<div>{this.renderSquare(j)}</div>);
+      }
+      rows.push(
+        <div className='row'>{cols}</div>
+      )
+    }
     return (
       <div className='board'>
-        <div className='row'>
-          <div>{this.renderSquare(0)}</div>
-          <div>{this.renderSquare(1)}</div>
-          <div>{this.renderSquare(2)}</div>
-        </div>
-        <div className='row'>
-          <div>{this.renderSquare(3)}</div>
-          <div>{this.renderSquare(4)}</div>
-          <div>{this.renderSquare(5)}</div>
-        </div>
-        <div className='row'>
-          <div>{this.renderSquare(6)}</div>
-          <div>{this.renderSquare(7)}</div>
-          <div>{this.renderSquare(8)}</div>
-        </div>
+        {rows}
       </div>
-    )
+      );
+  }
+
+  render() {
+    return this.loopSquares()
   }
 }
 
@@ -53,6 +54,10 @@ class Game extends React.Component {
       ),
       stepNumber: 0,
       xIsNext: true,
+      moveHistory: {
+        asc: true,
+        history: null
+      }
     }
   }
 
@@ -91,18 +96,33 @@ class Game extends React.Component {
 
   getHistory() {
     const rowLen = this.state.history.length - 1;
-    return this.state.history.map((board, idx) => {
+    let moveHistory = this.state.history.map((board, idx) => {
       let col =  1 + board.latestMoveSquare % 3;
       let row =  1 + Math.floor(board.latestMoveSquare / 3);
       return <li
         key={idx}
         className={idx === rowLen ? 'bold-it': ''}
         onClick={() => this.goToMove(idx)}>{idx === 0 ? 'Start over': `Go to move ${idx} (${row}, ${col})`}</li>
+    });
+    return moveHistory;
+    // this.setState({
+    //   moveHistory: {
+    //     history: moveHistory
+    //   }
+    // });
+  }
+
+  toggleMoveHistory() {
+    this.setState({
+      moveHistory: {
+        asc: !this.state.moveHistory.asc
+      }
     })
   }
 
   render() {
     let boardData = this.state.history[this.state.stepNumber].squares;
+    let moves = this.getHistory();
     return (
       <div className="App">
         <div>
@@ -114,7 +134,8 @@ class Game extends React.Component {
           <div>
             <ol>
               <p>Past moves:</p>
-              {this.getHistory()}
+              <p onClick={() => this.toggleMoveHistory()}>{this.state.moveHistory.asc ? 'dsc' : 'asc'}</p>
+              {this.state.moveHistory.asc ? moves : moves.reverse()}
             </ol>
           </div>
         </div>
