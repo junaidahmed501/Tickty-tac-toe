@@ -17,6 +17,6 @@
   display: flex;
 }
 
-.bold-it {
+.bold-it, .bold-it * {
   font-weight: bold;
 }

@@ -1,10 +1,13 @@
 import './App.css';
 import React from 'react';
-
+// import classNames from "classNames";
+var classNames = require('classnames');
 function Square(props) {
   return (
     <button
-      className='square'
+      className={classNames("square", {
+        'bold-it': props.boldIt,
+      })}
       onClick={props.handleSquareClick}>
       {props.btnVal}
     </button>
@@ -25,7 +28,11 @@ class Board extends React.Component {
     for(let i=0; i<3; i++) {
       let cols = [];
       for (let j= i*3 ; j<= i*3+2; j++) {
-        cols.push(<div>{this.renderSquare(j)}</div>);
+        let elm = <div>{this.renderSquare(j)}</div>;
+        if(this.props.winSequence && this.props.winSequence.includes(j)) {
+          elm = <div className='bold-it'>{this.renderSquare(j)}</div>
+        }
+        cols.push(elm);
       }
       rows.push(
         <div className='row'>{cols}</div>
@@ -35,7 +42,7 @@ class Board extends React.Component {
       <div className='board'>
         {rows}
       </div>
-      );
+    );
   }
 
   render() {
@@ -54,17 +61,14 @@ class Game extends React.Component {
       ),
       stepNumber: 0,
       xIsNext: true,
-      moveHistory: {
-        asc: true,
-        history: null
-      }
+      asc: true,
     }
   }
 
   makeTheMove(i) {
     let history = this.state.history.slice(0, this.state.stepNumber + 1);
     const squares = history[history.length - 1].squares.slice();
-    if (getWinner(squares) || squares[i]) {
+    if (getWinner(squares).winner || squares[i]) {
       return;
     }
     squares[i] = this.state.xIsNext ? 'X': 'O';
@@ -80,8 +84,12 @@ class Game extends React.Component {
   }
 
   getStatus() {
-    let winner = getWinner(this.state.history[this.state.history.length - 1].squares);
-    return <div>{winner ? `Winner: ${winner}`: (`Next turn: ${this.state.xIsNext ? 'X' : 'O'}`)}</div>
+    let winnerRes = getWinner(this.state.history[this.state.history.length - 1].squares);
+    if(winnerRes.winner) {
+      let sequence = winnerRes.sequence;
+      console.log(sequence);
+    }
+    return <div>{winnerRes.winner ? `Winner: ${winnerRes.winner}`: (`Next turn: ${this.state.xIsNext ? 'X' : 'O'}`)}</div>
   }
 
   goToMove(i) {
@@ -105,37 +113,32 @@ class Game extends React.Component {
         onClick={() => this.goToMove(idx)}>{idx === 0 ? 'Start over': `Go to move ${idx} (${row}, ${col})`}</li>
     });
     return moveHistory;
-    // this.setState({
-    //   moveHistory: {
-    //     history: moveHistory
-    //   }
-    // });
   }
 
   toggleMoveHistory() {
     this.setState({
-      moveHistory: {
-        asc: !this.state.moveHistory.asc
-      }
+      asc: !this.state.asc
     })
   }
 
   render() {
     let boardData = this.state.history[this.state.stepNumber].squares;
     let moves = this.getHistory();
+    let winnerRes = getWinner(boardData);
     return (
       <div className="App">
         <div>
           <div>{this.getStatus()}</div>
           <Board
             boardData={boardData}
-            handleBoardClick={(i) => this.makeTheMove(i)}/></div>
+            handleBoardClick={(i) => this.makeTheMove(i)}
+            winSequence={winnerRes.sequence}/></div>
         <div className='history'>
           <div>
             <ol>
               <p>Past moves:</p>
-              <p onClick={() => this.toggleMoveHistory()}>{this.state.moveHistory.asc ? 'dsc' : 'asc'}</p>
-              {this.state.moveHistory.asc ? moves : moves.reverse()}
+              <button onClick={() => this.toggleMoveHistory()}>{this.state.asc ? 'dsc' : 'asc'}</button>
+              {this.state.asc ? moves : moves.reverse()}
             </ol>
           </div>
         </div>
@@ -159,11 +162,16 @@ function getWinner(board) {
     [2,4,6]
   ];
   let winner;
+  let winSeq;
   for(let i=0; i<possibleWins.length; i++) {
     let [a,b,c] = possibleWins[i];
     if(board[a] && board[a] === board[b] && board[b] === board[c]) {
       winner = board[a];
+      winSeq = possibleWins[i]
     }
   }
-  return winner;
+  return {
+    winner,
+    sequence: winSeq
+  };
 }
