@@ -62,16 +62,22 @@ class Game extends React.Component {
       stepNumber: 0,
       xIsNext: true,
       asc: true,
+      draw: false
     }
   }
 
   makeTheMove(i) {
     let history = this.state.history.slice(0, this.state.stepNumber + 1);
     const squares = history[history.length - 1].squares.slice();
-    if (getWinner(squares).winner || squares[i]) {
+    if (getWinner(squares).winner || squares[i] || this.state.draw) {
       return;
     }
     squares[i] = this.state.xIsNext ? 'X': 'O';
+    if(!squares.includes(null)) {
+      this.setState({
+        draw: true
+      });
+    }
     history = history.concat({
       squares: squares,
       latestMoveSquare: i
@@ -89,7 +95,7 @@ class Game extends React.Component {
       let sequence = winnerRes.sequence;
       console.log(sequence);
     }
-    return <div>{winnerRes.winner ? `Winner: ${winnerRes.winner}`: (`Next turn: ${this.state.xIsNext ? 'X' : 'O'}`)}</div>
+    return <div>{winnerRes.winner ? `Winner: ${winnerRes.winner}`: (this.state.draw ? 'game draw': `Next turn: ${this.state.xIsNext ? 'X' : 'O'}`)}</div>
   }
 
   goToMove(i) {
