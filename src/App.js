@@ -104,7 +104,8 @@ class Game extends React.Component {
     this.setState({
       history: history,
       stepNumber: i,
-      xIsNext: i % 2 === 0
+      xIsNext: i % 2 === 0,
+      draw: false
     })
   }
 
