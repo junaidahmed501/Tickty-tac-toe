@@ -144,7 +144,7 @@ class Game extends React.Component {
           <div>
             <ol>
               <p>Past moves:</p>
-              <button onClick={() => this.toggleMoveHistory()}>{this.state.asc ? 'dsc' : 'asc'}</button>
+              <button onClick={() => this.toggleMoveHistory()}>{this.state.asc ? 'DSC' : 'ASC'}</button>
               {this.state.asc ? moves : moves.reverse()}
             </ol>
           </div>
